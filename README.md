@@ -1,4 +1,7 @@
 # DuplicateDetection
+## The project 
+
+This project is about finding candidate pairs among TVs on Web-shops with Locality-Sensitive Hashing. We try to improve the LSH performance by including an extra step in the data cleaning process.
 
 
 ## What's included?
