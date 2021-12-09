@@ -15,13 +15,6 @@ from data_loader import load
 ###################################################################################
 
 def load(file_path):
-    """
-    Loads and cleans a JSON file of product occurences that are grouped by model ID (as in the TVs.JSON example).
-    :param file_path: the file path to a JSON file
-    :return: a cleaned list of the data (as if we do not know the model type), and a binary matrix with element (i, j)
-    equal to one if item i and item j are duplicates.
-    """
-
     # Load data into dictionary.
     with open(file_path, "r") as file:
         data = json.load(file)
@@ -74,14 +67,6 @@ def load(file_path):
 ###################################################################################
 
 def convert_binary_old(data):
-    """
-    Transforms a list of items to a binary vector product representation, using model words in the title and decimals in
-    the feature values.
-    NOTE. This is the old implementation by Hartveld et al. (2018), implemented for evaluation purposes.
-    :param data: a list of items
-    :return: a binary vector product representation
-    """
-
     # For computational efficiency, we keep all model words as keys in a dictionary, where its value is the
     # corresponding row in the binary vector product representation.
     model_words = dict()
@@ -131,17 +116,6 @@ def convert_binary_old(data):
 
 
 def minhash(binary_vec, n):
-    """
-    Computes a MinHash signature matrix using n random hash functions, which will result in an n x c signature matrix,
-    where c is the number of columns (items). These random hash functions are of the form (a + bx) mod k, where a and b
-    are randomly generated integers, k is the smallest prime number that is larger than or equal to r (the original
-    number of rows in the r x c binary vector). We use quick, vectorized, numpy operations to substantially reduce
-    computation time.
-    :param binary_vec: a binary vector product representation
-    :param n: the number of rows in the new signature matrix
-    :return: the signature matrix (a NumPy array)
-    """
-
     random.seed(1)
 
     r = len(binary_vec)
@@ -180,13 +154,6 @@ def minhash(binary_vec, n):
 
 
 def lsh(signature, t):
-    """
-    Performs Locality Sensitive Hashing (LSH) based on a previously obtained MinHash matrix.
-    :param signature: the MinHash signature matrix
-    :param t: the approximate threshold value at which Pr[candidate] =~ 1/2
-    :return: a binary matrix with a one if two elements are candidate pairs, and zero otherwise
-    """
-
     n = len(signature)
 
     # Compute the approximate number of bands and rows from the threshold t, using that n = r * b, and t is
@@ -229,11 +196,6 @@ def lsh(signature, t):
 
 
 def common_count(data):
-    """
-    Finds and reports the most common count features.
-    :param data: a list of items
-    :return:
-    """
     feature_count = dict()
 
     # Loop through all items to identify common count features.
@@ -262,11 +224,6 @@ def common_count(data):
 ###################################################################################
 
 def main():
-    """
-    Runs the whole MSMP++ procedure, and stores results in a csv file.
-    :return:
-    """
-
     identify_common_count = False
     run_lsh = True
     write_result = True
@@ -289,8 +246,8 @@ def main():
         if write_result:
             with open(result_path + "results_new.csv", 'w') as out:
                 out.write(
-                    "t,comparisons,pq,pc,f1,comparisons_alt,pq_alt,pc_alt,f1_alt,comparisons_old,pq_old,pc_old,"
-                    "f1_old\n")
+                    "t,comparisons,pq,pc"
+                    "f1\n")
 
         for t in thresholds:
             print("t = ", t)
@@ -318,17 +275,6 @@ def main():
 
 
 def do_lsh_old(data_list, duplicates, t):
-    """
-    Bins items using MinHash and LSH, and computes and returns performance metrics based on the matrix of true
-    duplicates.
-    NOTE. This is the old implementation by Hartveld et al. (2018), implemented for evaluation purposes.
-    :param data_list: a list of items
-    :param duplicates: a binary matrix where item (i, j) is equal to one if items i and j are duplicates, and zero
-    otherwise
-    :param t: the threshold value
-    :return: the fraction of comparisons, pair quality, pair completeness, and F_1 measure
-    """
-
     binary_vec = convert_binary_old(data_list)
     n = round(round(0.5 * len(binary_vec)) / 100) * 100
     signature = minhash(binary_vec, n)
@@ -355,15 +301,6 @@ def do_lsh_old(data_list, duplicates, t):
     return comparison_frac, pq, pc, f1
 
 def bootstrap(data_list, duplicates):
-    """
-    Creates a bootstrap by sampling n elements from the data with replacement, where n denotes the size of the original
-    dataset.
-    :param data_list: a list of data
-    :param duplicates: a binary matrix where item (i, j) is equal to one if items i and j are duplicates, and zero
-    otherwise
-    :return: a bootstrap sample of the data and the corresponding duplicate matrix
-    """
-
     # Compute indices to be included in the bootstrap.
     indices = [random.randint(x, len(data_list) - 1) for x in [0] * len(data_list)]
 
